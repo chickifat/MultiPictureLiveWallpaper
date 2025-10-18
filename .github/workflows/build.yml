@@ -1,0 +1,61 @@
+name: Build MultiPicture APK (2025 Modern)
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: cimg/android:2024.01.1
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17 (2025 Standard)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK (Latest)
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        target: google_apis
+        arch: x86_64
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Make gradlew executable
+      run: chmod +x gradlew
+      
+    - name: Build with latest Gradle (8.5)
+      run: ./gradlew assembleFreeDebug assembleDntDebug --stacktrace
+      
+    - name: Sign APKs (Optional)
+      run: |
+        # Auto-sign with debug key for testing
+        find app/build/outputs/apk -name "*.apk" -exec jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ~/.android/debug.keystore -storepass android -keypass android {} androiddebugkey \;
+      
+    - name: Upload APKs with Build Info
+      uses: actions/upload-artifact@v4
+      with:
+        name: multipicture-apks-${{ github.run_number }}
+        path: |
+          app/build/outputs/apk/**/*.apk
+          app/build/outputs/mapping/**/mapping.txt
+        retention-days: 30

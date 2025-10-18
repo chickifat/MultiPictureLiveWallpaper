@@ -1,0 +1,90 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'org.tamanegi.wallpaper.multipicture'
+    compileSdk 35 // Latest Android 15
+
+    defaultConfig {
+        applicationId "org.tamanegi.wallpaper.multipicture"
+        minSdk 21 // Updated minimum for better compatibility
+        targetSdk 35 // Target latest Android 15
+        versionCode 50
+        versionName "0.7.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            debuggable true
+            applicationIdSuffix ".debug"
+        }
+    }
+
+    productFlavors {
+        free {
+            dimension "version"
+            applicationId "org.tamanegi.wallpaper.multipicture"
+        }
+        dnt {
+            dimension "version"
+            applicationId "org.tamanegi.wallpaper.multipicture.dnt"
+        }
+    }
+
+    flavorDimensions "version"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17 // Modern Java
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile '../AndroidManifest.xml'
+            java.srcDirs = ['../src']
+            res.srcDirs = ['../res']
+            assets.srcDirs = ['../assets']
+        }
+        free {
+            manifest.srcFile '../variant/free/AndroidManifest.xml'
+        }
+        dnt {
+            manifest.srcFile '../variant/dnt/AndroidManifest.xml'
+        }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+        disable 'MissingTranslation', 'ExtraTranslation'
+    }
+
+    // 2025 Build Features
+    buildFeatures {
+        buildConfig true
+        resValues true
+    }
+}
+
+dependencies {
+    // Updated to latest stable versions (2025)
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.activity:activity:1.8.2'
+    
+    // For better permission handling
+    implementation 'androidx.fragment:fragment:1.6.2'
+    
+    // Optional: For analytics/crash reporting
+    // implementation 'com.google.firebase:firebase-analytics:21.5.0'
+}

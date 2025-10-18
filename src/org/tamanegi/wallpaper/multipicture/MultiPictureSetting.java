@@ -151,6 +151,12 @@ public class MultiPictureSetting extends PreferenceActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        
+        // Check and request permissions first
+        if (!PermissionHelper.hasStoragePermissions(this)) {
+            PermissionHelper.requestStoragePermissions(this);
+        }
+        
         addPreferencesFromResource(R.xml.pref);
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -834,6 +840,32 @@ public class MultiPictureSetting extends PreferenceActivity
             }
 
             return false;
+        }
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (PermissionHelper.handlePermissionResult(requestCode, permissions, grantResults)) {
+            // Permission granted, refresh the UI or reload data
+            Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show();
+        } else {
+            // Permission denied, show explanation
+            Toast.makeText(this, "Storage permission is required to access pictures", Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == PermissionHelper.MANAGE_STORAGE_REQUEST_CODE) {
+            if (PermissionHelper.hasManageStoragePermission()) {
+                Toast.makeText(this, "All files access granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "All files access is recommended for better compatibility", Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

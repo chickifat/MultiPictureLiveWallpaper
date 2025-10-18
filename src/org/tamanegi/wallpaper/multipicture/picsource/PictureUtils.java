@@ -115,7 +115,13 @@ public class PictureUtils
                 cur.close();
             }
         }
+        catch(SecurityException e) {
+            // Permission denied - return null to indicate permission issue
+            android.util.Log.w("MultiPicture", "Storage permission denied when accessing buckets");
+            return null;
+        }
         catch(Exception e) {
+            android.util.Log.w("MultiPicture", "Error accessing image buckets: " + e.getMessage());
             return null;
         }
     }
@@ -279,7 +285,8 @@ public class PictureUtils
             files = folder.listFiles();
         }
         catch(SecurityException e) {
-            // ignore
+            // Permission denied for folder access
+            android.util.Log.w("MultiPicture", "Permission denied accessing folder: " + folder.getPath());
         }
         if(files == null) {
             return list;
@@ -305,7 +312,8 @@ public class PictureUtils
                 files = folder.listFiles();
             }
             catch(SecurityException e) {
-                // ignore
+                // Permission denied for folder access
+                android.util.Log.w("MultiPicture", "Permission denied accessing folder: " + folder.getPath());
             }
             if(files == null) {
                 continue;
