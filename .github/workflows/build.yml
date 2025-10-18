@@ -1,4 +1,4 @@
-name: Build MultiPicture APK (2025 Modern)
+name: Build MultiPicture APK
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Set up JDK 17 (2025 Standard)
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
@@ -23,9 +23,6 @@ jobs:
         
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      with:
-        cmdline-tools-version: 9477386
-        packages: 'platforms;android-34 build-tools;34.0.0'
         
     - name: Cache Gradle packages
       uses: actions/cache@v4
@@ -40,13 +37,24 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x gradlew
       
-    - name: Build with latest Gradle (8.5)
-      run: ./gradlew assembleFreeDebug assembleDntDebug --stacktrace
+    - name: Accept SDK licenses
+      run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
       
-    - name: Upload APKs with Build Info
+    - name: Install required SDK components
+      run: |
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34"
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0"
+      
+    - name: Create local.properties
+      run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      
+    - name: Build debug APK
+      run: ./gradlew assembleFreeDebug --stacktrace --info
+      
+    - name: Upload APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
-        name: multipicture-apks-${{ github.run_number }}
-        path: |
-          app/build/outputs/apk/**/*.apk
+        name: multipicture-apk-${{ github.run_number }}
+        path: app/build/outputs/apk/free/debug/*.apk
         retention-days: 30
